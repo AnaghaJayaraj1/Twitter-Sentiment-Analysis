@@ -1,0 +1,21 @@
+{
+  "name": "db_home",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "chart.js": "^2.7.2",
+    "react": "^16.0.0",
+    "react-chartjs-2": "^2.7.0",
+    "react-dom": "^16.0.0",
+    "react-router-dom": "*",
+    "react-scripts": "1.0.14",
+    "redis": "^2.8.0",
+    "socket.io-client": "^2.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
