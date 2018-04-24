@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { subscribeToQueue } from './../api/TweetsAPI';
 import {Bar, Line, Pie} from 'react-chartjs-2';
+import positive_image from './../public/positive.svg';
+import negative_image from './../public/negative.svg';
 
 class App extends Component {
 
@@ -9,7 +11,7 @@ class App extends Component {
         positive_count: 0,
         negative_count: 0,
         tweet_pred_display: [],
-        isHold: false
+        isHold: false,
     };
 
     constructor(props) {
@@ -17,10 +19,12 @@ class App extends Component {
         subscribeToQueue((err, tweet) => {
             if(!this.state.isHold){
                 var tweets = this.state.tweet_pred;
-                console.log(tweet);
+                // console.log(tweet);
                 tweet = JSON.parse(tweet);
-                tweets.push(tweet); 
-                if(tweet.sentiment == "-ve"){  
+                if(tweets.length > 100)
+                    tweets.shift();
+                tweets.push(tweet);
+                if(tweet.sentiment == "0.0"){
                     this.setState({
                         tweet_pred : tweets,
                         negative_count : this.state.negative_count + 1
@@ -36,6 +40,16 @@ class App extends Component {
         });
     }
 
+    addData(chart, label, data) {
+        chart.data.labels.push(label);
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(this.state.positive_count);
+        });
+        chart.update();
+    }
+
+    
+
     createItemsList(){
         return this.state.tweet_pred.map((tweet) => {
             return(
@@ -43,15 +57,29 @@ class App extends Component {
                         <td>
                             {tweet.text}
                         </td>
-                        <td width = "40">
-                                +ve
+                        <td width = "60">
+                            {this.renderIcon(tweet)}
                         </td>
                     </tr>
             );
         });
     }
 
+    renderIcon(tweet){
+        if(tweet.sentiment == "0.0"){
+        return(
+            <img type="image/svg+xml" src={negative_image} height="30px" alt='logo'/>
+        )}
+        else{
+        return(
+            <img type="image/svg+xml" src={positive_image} height="30px" alt='logo'/>
+        )}
+    }
+
     render() {
+        const style = { display: 'flex', justifyContent: 'center', alignItems: 'center'}
+        const style_p = { display: 'flex', justifyContent: 'center', alignItems: 'center', 'margin-right': '30px'}
+        // const style_color = { backgroundColor: '#eaebed'}
         return (
         <div class="container-fluid">
             <div class="row">
@@ -103,17 +131,15 @@ class App extends Component {
                         </div>
                     </div>
                     <div className = "row">
-                        <div  className = "col-md-3 ml-sm-3 col-lg-3"/>
                         <div class="my-4 w-50" width="500px" height="180px" position="absolute">
-                            <Bar data={{
+                            <Pie id="lineChart" data={{
                                     labels: ["positive", "negative"],
                                     datasets: [
                                         {
                                             label:"Tweets",
-                                            data:[(this.state.positive_count)/(this.state.positive_count + this.state.negative_count) * 100, 
-                                                this.state.negative_count/(this.state.positive_count + this.state.negative_count) * 100],
+                                            data:[this.state.positive_count/(this.state.positive_count + this.state.negative_count)*100,this.state.negative_count/(this.state.positive_count + this.state.negative_count)*100],
                                             backgroundColor:['rgba(124, 254, 0, 0.6)','rgba(255, 0, 0, 0.6)']
-                                        }
+                                        },
                                         ]
                                     }}
                                 options={{
@@ -121,28 +147,37 @@ class App extends Component {
                                 display:"display", text:"Analysis Result", fontSize:15},
                                 legend:{
                                 display:"false", position:"xyz"},
-                                scales: {
-                                    yAxes: [{
-                                        display: true,
-                                        ticks: {
-                                            beginAtZero: true,
-                                            max: 100
-                                        }
-                                    }]
-                                },
+                                // scales: {
+                                //     yAxes: [{
+                                //         display: true,
+                                //         ticks: {
+                                //             beginAtZero: true,
+                                //             max: 100
+                                //         }
+                                //     }]
+                                // },
                                 responsive: true,
                                 maintainAspectRatio: true}}/>
                         </div>
-                        <div  className = "col-md-3 ml-sm-3 col-lg-3"/>
+                        <div  className = "col-md-1 ml-sm-1 col-lg-1"/>
+                        <div  className = "row col-md-3 ml-sm-3 col-lg-3" style={style}>
+                            <div className="col-md-6 ml-sm-6 col-lg-6">
+                                <img style={style} type="image/svg+xml" src={positive_image} height="60px" alt='logo'/>
+                                <p style={style_p}>{this.state.positive_count}</p>
+                            </div>
+                            <div className="col-md-6 ml-sm-6 col-lg-6"> 
+                                <img style={style} type="image/svg+xml" src={negative_image} height="60px" alt='logo'/>
+                                <p style={style_p}>{this.state.negative_count}</p>    
+                            </div>
+                        </div>
                     </div>
-
-                    <h2>Tweet Sentiments</h2>
+                    <h4>Tweet Sentiments</h4>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm">
                             <thead>
                                 <tr>
                                     <th>Tweet</th>
-                                    <th width = "40">Sentiment</th>
+                                    <th width = "60">Sentiment</th>
                                 </tr>
                             </thead>
                             <tbody>
